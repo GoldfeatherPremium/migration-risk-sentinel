@@ -402,7 +402,7 @@ function parseAlterAction(tokens: Token[]): AlterAction {
     const column = colTok ? identValue(colTok) : "";
     const rest = tokens.slice(c.pos);
     const defIdx = findTopLevelWord(rest, "DEFAULT");
-    let defaultTokens: Token[] = [];
+    const defaultTokens: Token[] = [];
     if (defIdx >= 0) {
       // Default expression runs until the next constraint keyword at depth 0.
       const stop = [
