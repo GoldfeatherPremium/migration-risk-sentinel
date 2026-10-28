@@ -10,15 +10,7 @@
  */
 
 export type TokenType =
-  | "word"
-  | "qident"
-  | "string"
-  | "number"
-  | "param"
-  | "punct"
-  | "op"
-  | "comment"
-  | "meta";
+  "word" | "qident" | "string" | "number" | "param" | "punct" | "op" | "comment" | "meta";
 
 export interface Token {
   type: TokenType;
@@ -75,7 +67,14 @@ export function tokenize(src: string): LexResult {
     i = Math.min(to, n);
   };
 
-  const push = (type: TokenType, start: number, end: number, value: string, sl: number, sc: number) => {
+  const push = (
+    type: TokenType,
+    start: number,
+    end: number,
+    value: string,
+    sl: number,
+    sc: number,
+  ) => {
     const raw = src.slice(start, end);
     tokens.push({
       type,
@@ -149,7 +148,17 @@ export function tokenize(src: string): LexResult {
     // String literal with optional prefix: E'..', B'..', X'..', N'..', U&'..'
     {
       let prefixLen = 0;
-      if ((ch === "E" || ch === "e" || ch === "B" || ch === "b" || ch === "X" || ch === "x" || ch === "N" || ch === "n") && next === "'") {
+      if (
+        (ch === "E" ||
+          ch === "e" ||
+          ch === "B" ||
+          ch === "b" ||
+          ch === "X" ||
+          ch === "x" ||
+          ch === "N" ||
+          ch === "n") &&
+        next === "'"
+      ) {
         prefixLen = 1;
       } else if ((ch === "U" || ch === "u") && next === "&" && src[i + 2] === "'") {
         prefixLen = 2;
@@ -274,7 +283,13 @@ export function tokenize(src: string): LexResult {
 
     if (OP_CHARS.has(ch)) {
       let j = i + 1;
-      while (j < n && OP_CHARS.has(src[j]) && !(src[j] === "-" && src[j + 1] === "-") && !(src[j] === "/" && src[j + 1] === "*")) j++;
+      while (
+        j < n &&
+        OP_CHARS.has(src[j]) &&
+        !(src[j] === "-" && src[j + 1] === "-") &&
+        !(src[j] === "/" && src[j + 1] === "*")
+      )
+        j++;
       push("op", start, j, src.slice(start, j), sl, sc);
       advance(j);
       continue;

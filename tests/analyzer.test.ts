@@ -1,6 +1,13 @@
 // @vitest-environment node
 import { describe, expect, it } from "vitest";
-import { analyzeMigration, AnalyzerInputError, ConfigError, toJSON, toMarkdown, toSarif } from "../packages/core/src/index.js";
+import {
+  analyzeMigration,
+  AnalyzerInputError,
+  ConfigError,
+  toJSON,
+  toMarkdown,
+  toSarif,
+} from "../packages/core/src/index.js";
 import { analyzeSql, fixture, ids } from "./helpers";
 
 describe("fixtures", () => {
@@ -40,7 +47,9 @@ describe("fixtures", () => {
   });
 
   it("add column fixture flags only the unsafe columns", () => {
-    const r = analyzeSql(fixture("add_column_not_null.sql"), { rules: { MIG032: "off", MIG023: "off" } });
+    const r = analyzeSql(fixture("add_column_not_null.sql"), {
+      rules: { MIG032: "off", MIG023: "off" },
+    });
     expect(r.findings.map((f) => [f.ruleId, f.line, f.severity])).toEqual([
       ["MIG010", 1, "error"],
       ["MIG010", 3, "warning"],
@@ -96,17 +105,30 @@ describe("config", () => {
     expect(() => analyzeSql("", { rules: { MIG999: "error" } })).toThrow(ConfigError);
     expect(() => analyzeSql("", { failOn: "sometimes" })).toThrow(ConfigError);
     expect(() => analyzeSql("", { unknownKey: true })).toThrow(ConfigError);
-    expect(() => analyzeSql("", { rules: { MIG023: { options: { nope: 1 } } } })).toThrow(ConfigError);
+    expect(() => analyzeSql("", { rules: { MIG023: { options: { nope: 1 } } } })).toThrow(
+      ConfigError,
+    );
   });
   it("validates input", () => {
     expect(() => analyzeMigration({ files: "x" as never })).toThrow(AnalyzerInputError);
-    expect(() => analyzeMigration({ files: [{ path: "a.sql", content: "" }, { path: "./a.sql", content: "" }] })).toThrow(AnalyzerInputError);
+    expect(() =>
+      analyzeMigration({
+        files: [
+          { path: "a.sql", content: "" },
+          { path: "./a.sql", content: "" },
+        ],
+      }),
+    ).toThrow(AnalyzerInputError);
   });
 });
 
 describe("cross-file analysis", () => {
   it("detects ordering and duplicates in a migrations folder", () => {
-    const files = ["20240101000000_init.sql", "20240102000000_orders_fk.sql", "20240103000000_orders.sql"].map((n) => ({
+    const files = [
+      "20240101000000_init.sql",
+      "20240102000000_orders_fk.sql",
+      "20240103000000_orders.sql",
+    ].map((n) => ({
       path: `supabase/migrations/${n}`,
       content: fixture(`project/supabase/migrations/${n}`),
     }));
@@ -118,7 +140,12 @@ describe("cross-file analysis", () => {
 });
 
 describe("reporters", () => {
-  const input = { files: [{ path: "b.sql", content: "drop table x;\nupdate y set a = 1;" }, { path: "a.sql", content: "truncate z;" }] };
+  const input = {
+    files: [
+      { path: "b.sql", content: "drop table x;\nupdate y set a = 1;" },
+      { path: "a.sql", content: "truncate z;" },
+    ],
+  };
 
   it("JSON is valid and deterministic regardless of input order", () => {
     const one = toJSON(analyzeMigration(input));

@@ -16,10 +16,21 @@ export function toMarkdown(result: AnalysisResult): string {
   const s = result.summary;
   const lines: string[] = [];
   lines.push("## Supabase Migration Guard report", "");
-  lines.push(`Analyzer version ${result.tool.version} · ${s.filesAnalyzed} file(s) analyzed${s.filesExcluded ? ` · ${s.filesExcluded} excluded` : ""}`, "");
-  lines.push("| Errors | Warnings | Info | Suppressed |", "| ---: | ---: | ---: | ---: |", `| ${s.error} | ${s.warning} | ${s.info} | ${s.suppressed} |`, "");
+  lines.push(
+    `Analyzer version ${result.tool.version} · ${s.filesAnalyzed} file(s) analyzed${s.filesExcluded ? ` · ${s.filesExcluded} excluded` : ""}`,
+    "",
+  );
+  lines.push(
+    "| Errors | Warnings | Info | Suppressed |",
+    "| ---: | ---: | ---: | ---: |",
+    `| ${s.error} | ${s.warning} | ${s.info} | ${s.suppressed} |`,
+    "",
+  );
   if (result.findings.length === 0) {
-    lines.push("No findings. Static analysis cannot guarantee a migration is safe — review lock and data impact for production.", "");
+    lines.push(
+      "No findings. Static analysis cannot guarantee a migration is safe — review lock and data impact for production.",
+      "",
+    );
     return lines.join("\n");
   }
   for (const file of result.files) {
@@ -43,7 +54,11 @@ export function toMarkdown(result: AnalysisResult): string {
   return lines.join("\n");
 }
 
-const SARIF_LEVEL: Record<Finding["severity"], "error" | "warning" | "note"> = { error: "error", warning: "warning", info: "note" };
+const SARIF_LEVEL: Record<Finding["severity"], "error" | "warning" | "note"> = {
+  error: "error",
+  warning: "warning",
+  info: "note",
+};
 
 export function toSarif(result: AnalysisResult, options: { informationUri?: string } = {}): string {
   const meta = getRuleMeta();
@@ -79,7 +94,12 @@ export function toSarif(result: AnalysisResult, options: { informationUri?: stri
             {
               physicalLocation: {
                 artifactLocation: { uri: f.file.split("/").map(encodeURIComponent).join("/") },
-                region: { startLine: f.line, startColumn: f.column, endLine: f.endLine, endColumn: Math.max(f.endColumn, f.column) },
+                region: {
+                  startLine: f.line,
+                  startColumn: f.column,
+                  endLine: f.endLine,
+                  endColumn: Math.max(f.endColumn, f.column),
+                },
               },
             },
           ],

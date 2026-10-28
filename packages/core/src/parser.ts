@@ -47,9 +47,21 @@ export type AlterAction =
       references: QualifiedName | null;
       loc: SourceLocation;
     }
-  | { type: "drop_column"; column: string; ifExists: boolean; cascade: boolean; loc: SourceLocation }
+  | {
+      type: "drop_column";
+      column: string;
+      ifExists: boolean;
+      cascade: boolean;
+      loc: SourceLocation;
+    }
   | { type: "drop_constraint"; constraintName: string; loc: SourceLocation }
-  | { type: "alter_column_type"; column: string; hasUsing: boolean; newType: string; loc: SourceLocation }
+  | {
+      type: "alter_column_type";
+      column: string;
+      hasUsing: boolean;
+      newType: string;
+      loc: SourceLocation;
+    }
   | { type: "set_not_null"; column: string; loc: SourceLocation }
   | { type: "set_tablespace"; loc: SourceLocation }
   | { type: "validate_constraint"; loc: SourceLocation }
@@ -86,8 +98,20 @@ export type ParsedStatement =
       ifNotExists: boolean;
     }
   | { kind: "truncate"; tables: QualifiedName[]; cascade: boolean }
-  | { kind: "update"; table: QualifiedName; hasWhere: boolean; whereTokens: Token[]; whereCurrentOf: boolean }
-  | { kind: "delete"; table: QualifiedName; hasWhere: boolean; whereTokens: Token[]; whereCurrentOf: boolean }
+  | {
+      kind: "update";
+      table: QualifiedName;
+      hasWhere: boolean;
+      whereTokens: Token[];
+      whereCurrentOf: boolean;
+    }
+  | {
+      kind: "delete";
+      table: QualifiedName;
+      hasWhere: boolean;
+      whereTokens: Token[];
+      whereCurrentOf: boolean;
+    }
   | { kind: "reindex"; target: string; concurrently: boolean; name: QualifiedName | null }
   | { kind: "cluster"; table: QualifiedName | null }
   | { kind: "vacuum"; full: boolean }
@@ -119,18 +143,65 @@ export interface ParsedFile {
 }
 
 const KNOWN_COMMANDS = new Set([
-  "ABORT", "ALTER", "ANALYZE", "BEGIN", "CALL", "CHECKPOINT", "CLOSE", "CLUSTER", "COMMENT",
-  "COMMIT", "COPY", "CREATE", "DEALLOCATE", "DECLARE", "DELETE", "DISCARD", "DO", "DROP", "END",
-  "EXECUTE", "EXPLAIN", "FETCH", "GRANT", "IMPORT", "INSERT", "LISTEN", "LOAD", "LOCK", "MERGE",
-  "MOVE", "NOTIFY", "PREPARE", "REASSIGN", "REFRESH", "REINDEX", "RELEASE", "RESET", "REVOKE",
-  "ROLLBACK", "SAVEPOINT", "SECURITY", "SELECT", "SET", "SHOW", "START", "TABLE", "TRUNCATE",
-  "UNLISTEN", "UPDATE", "VACUUM", "VALUES", "WITH",
+  "ABORT",
+  "ALTER",
+  "ANALYZE",
+  "BEGIN",
+  "CALL",
+  "CHECKPOINT",
+  "CLOSE",
+  "CLUSTER",
+  "COMMENT",
+  "COMMIT",
+  "COPY",
+  "CREATE",
+  "DEALLOCATE",
+  "DECLARE",
+  "DELETE",
+  "DISCARD",
+  "DO",
+  "DROP",
+  "END",
+  "EXECUTE",
+  "EXPLAIN",
+  "FETCH",
+  "GRANT",
+  "IMPORT",
+  "INSERT",
+  "LISTEN",
+  "LOAD",
+  "LOCK",
+  "MERGE",
+  "MOVE",
+  "NOTIFY",
+  "PREPARE",
+  "REASSIGN",
+  "REFRESH",
+  "REINDEX",
+  "RELEASE",
+  "RESET",
+  "REVOKE",
+  "ROLLBACK",
+  "SAVEPOINT",
+  "SECURITY",
+  "SELECT",
+  "SET",
+  "SHOW",
+  "START",
+  "TABLE",
+  "TRUNCATE",
+  "UNLISTEN",
+  "UPDATE",
+  "VACUUM",
+  "VALUES",
+  "WITH",
 ]);
 
 export function tokenLoc(first: Token, last: Token = first): SourceLocation {
   const lines = last.raw.split("\n");
   const endLine = last.line + lines.length - 1;
-  const endColumn = lines.length > 1 ? lines[lines.length - 1].length + 1 : last.col + last.raw.length;
+  const endColumn =
+    lines.length > 1 ? lines[lines.length - 1].length + 1 : last.col + last.raw.length;
   return { line: first.line, column: first.col, endLine, endColumn };
 }
 
@@ -229,7 +300,8 @@ function splitStatements(tokens: Token[]): { stmts: Token[][]; comments: Token[]
     }
     // SQL-standard function bodies: BEGIN ATOMIC ... END contain semicolons.
     if (t.type === "word") {
-      if (t.upper === "ATOMIC" && cur.length > 0 && isWord(cur[cur.length - 1], "BEGIN")) atomicDepth++;
+      if (t.upper === "ATOMIC" && cur.length > 0 && isWord(cur[cur.length - 1], "BEGIN"))
+        atomicDepth++;
       else if (atomicDepth > 0 && t.upper === "CASE") atomicDepth++;
       else if (atomicDepth > 0 && t.upper === "END") atomicDepth--;
     }
@@ -305,7 +377,8 @@ function parseAlterAction(tokens: Token[]): AlterAction {
         if (nt) constraintName = identValue(nt);
       }
       const typeTok = c.peek();
-      let constraintType: "unique" | "primary_key" | "foreign_key" | "check" | "exclude" | "unknown" = "unknown";
+      let constraintType:
+        "unique" | "primary_key" | "foreign_key" | "check" | "exclude" | "unknown" = "unknown";
       if (isWord(typeTok, "UNIQUE")) constraintType = "unique";
       else if (isWord(typeTok, "PRIMARY")) constraintType = "primary_key";
       else if (isWord(typeTok, "FOREIGN")) constraintType = "foreign_key";
@@ -329,10 +402,20 @@ function parseAlterAction(tokens: Token[]): AlterAction {
     const column = colTok ? identValue(colTok) : "";
     const rest = tokens.slice(c.pos);
     const defIdx = findTopLevelWord(rest, "DEFAULT");
-    let defaultTokens: Token[] = [];
+    const defaultTokens: Token[] = [];
     if (defIdx >= 0) {
       // Default expression runs until the next constraint keyword at depth 0.
-      const stop = ["NOT", "NULL", "CONSTRAINT", "CHECK", "UNIQUE", "PRIMARY", "REFERENCES", "GENERATED", "COLLATE"];
+      const stop = [
+        "NOT",
+        "NULL",
+        "CONSTRAINT",
+        "CHECK",
+        "UNIQUE",
+        "PRIMARY",
+        "REFERENCES",
+        "GENERATED",
+        "COLLATE",
+      ];
       let depth = 0;
       for (let k = defIdx + 1; k < rest.length; k++) {
         const t = rest[k];
@@ -352,7 +435,13 @@ function parseAlterAction(tokens: Token[]): AlterAction {
       const t = rest[k];
       if (isPunct(t, "(")) depth++;
       else if (isPunct(t, ")")) depth--;
-      if (depth === 0 && isWord(t, "NOT") && isWord(rest[k + 1], "NULL") && !defaultTokens.includes(t)) notNull = true;
+      if (
+        depth === 0 &&
+        isWord(t, "NOT") &&
+        isWord(rest[k + 1], "NULL") &&
+        !defaultTokens.includes(t)
+      )
+        notNull = true;
     }
     const primaryKey = containsWordSeq(rest, "PRIMARY", "KEY");
     return {
@@ -377,7 +466,10 @@ function parseAlterAction(tokens: Token[]): AlterAction {
       return { type: "drop_constraint", constraintName: nt ? identValue(nt) : "", loc };
     }
     const hadColumn = !!c.acceptWord("COLUMN");
-    if (hadColumn || (c.isIdent(c.peek()) && !isWord(c.peek(), "DEFAULT", "NOT", "IDENTITY", "EXPRESSION"))) {
+    if (
+      hadColumn ||
+      (c.isIdent(c.peek()) && !isWord(c.peek(), "DEFAULT", "NOT", "IDENTITY", "EXPRESSION"))
+    ) {
       const ifExists = c.acceptSeq("IF", "EXISTS");
       const nt = c.next();
       return {
@@ -400,7 +492,9 @@ function parseAlterAction(tokens: Token[]): AlterAction {
       const usingIdx = findTopLevelWord(rest, "USING");
       const typeToks = usingIdx >= 0 ? rest.slice(0, usingIdx) : rest;
       const collIdx = typeToks.findIndex((t) => isWord(t, "COLLATE"));
-      const newType = (collIdx >= 0 ? typeToks.slice(0, collIdx) : typeToks).map((t) => t.raw).join(" ");
+      const newType = (collIdx >= 0 ? typeToks.slice(0, collIdx) : typeToks)
+        .map((t) => t.raw)
+        .join(" ");
       return { type: "alter_column_type", column, hasUsing: usingIdx >= 0, newType, loc };
     }
     if (c.acceptSeq("SET", "NOT", "NULL")) return { type: "set_not_null", column, loc };
@@ -434,7 +528,12 @@ function skipWith(tokens: Token[]): number {
     const t = tokens[k];
     if (isPunct(t, "(")) depth++;
     else if (isPunct(t, ")")) depth--;
-    else if (depth === 0 && isWord(t, "UPDATE", "DELETE", "INSERT", "SELECT", "MERGE") && isPunct(tokens[k - 1], ")")) return k;
+    else if (
+      depth === 0 &&
+      isWord(t, "UPDATE", "DELETE", "INSERT", "SELECT", "MERGE") &&
+      isPunct(tokens[k - 1], ")")
+    )
+      return k;
   }
   return 0;
 }
@@ -501,7 +600,11 @@ export function parseStatementTokens(tokens: Token[]): ParsedStatement {
     const concurrently = !!c.acceptWord("CONCURRENTLY");
     const ifExists = c.acceptSeq("IF", "EXISTS");
     const names: QualifiedName[] = [];
-    if (["TABLE", "INDEX", "SCHEMA", "VIEW", "MATERIALIZED VIEW", "SEQUENCE", "TYPE"].includes(objectType)) {
+    if (
+      ["TABLE", "INDEX", "SCHEMA", "VIEW", "MATERIALIZED VIEW", "SEQUENCE", "TYPE"].includes(
+        objectType,
+      )
+    ) {
       while (!c.done()) {
         const nm = c.parseName();
         if (!nm) break;
@@ -510,7 +613,14 @@ export function parseStatementTokens(tokens: Token[]): ParsedStatement {
         else break;
       }
     }
-    return { kind: "drop", objectType, names, ifExists, cascade: containsWordSeq(tokens, "CASCADE"), concurrently };
+    return {
+      kind: "drop",
+      objectType,
+      names,
+      ifExists,
+      cascade: containsWordSeq(tokens, "CASCADE"),
+      concurrently,
+    };
   }
 
   if (c.acceptWord("ALTER")) {
@@ -520,7 +630,11 @@ export function parseStatementTokens(tokens: Token[]): ParsedStatement {
       const table = c.parseName() ?? makeName(null, "?");
       if (c.peek()?.value === "*") c.next();
       const rest = tokens.slice(c.pos);
-      const actions = rest.length ? splitTopLevel(rest).filter((a) => a.length > 0).map(parseAlterAction) : [];
+      const actions = rest.length
+        ? splitTopLevel(rest)
+            .filter((a) => a.length > 0)
+            .map(parseAlterAction)
+        : [];
       return { kind: "alter_table", table, ifExists, actions };
     }
     return { kind: "other", keyword: "ALTER " + (c.peek()?.upper ?? "") };

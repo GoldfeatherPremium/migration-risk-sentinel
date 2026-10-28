@@ -102,13 +102,17 @@ function formatText(r: AnalysisResult): string {
     if (!file.findings.length) continue;
     out.push(file.path);
     for (const f of file.findings) {
-      out.push(`  ${f.line}:${f.column}  ${f.severity.padEnd(7)}  ${f.ruleId}  ${f.message}${f.confidence === "heuristic" ? " (heuristic)" : ""}`);
+      out.push(
+        `  ${f.line}:${f.column}  ${f.severity.padEnd(7)}  ${f.ruleId}  ${f.message}${f.confidence === "heuristic" ? " (heuristic)" : ""}`,
+      );
       out.push(`           fix: ${f.remediation}`);
     }
     out.push("");
   }
   const s = r.summary;
-  out.push(`${s.filesAnalyzed} file(s) analyzed: ${s.error} error(s), ${s.warning} warning(s), ${s.info} info, ${s.suppressed} suppressed.`);
+  out.push(
+    `${s.filesAnalyzed} file(s) analyzed: ${s.error} error(s), ${s.warning} warning(s), ${s.info} info, ${s.suppressed} suppressed.`,
+  );
   return out.join("\n") + "\n";
 }
 
@@ -124,7 +128,8 @@ export function run(argv: string[], io: IO): number {
     }
     if (argv[0] === "rules") {
       const r = analyzeMigration({ files: [] });
-      for (const rule of r.rules) io.stdout(`${rule.id}  ${rule.severity.padEnd(7)}  ${rule.name}\n`);
+      for (const rule of r.rules)
+        io.stdout(`${rule.id}  ${rule.severity.padEnd(7)}  ${rule.name}\n`);
       return EXIT.OK;
     }
     if (argv[0] !== "scan") throw new UsageError(`Unknown command: ${argv[0]}. Run with --help.`);
@@ -149,24 +154,33 @@ export function run(argv: string[], io: IO): number {
     }
     const v = parsed.values;
     const format = v.format as string;
-    if (!["text", "json", "markdown", "sarif"].includes(format)) throw new UsageError(`Invalid --format: ${format}`);
+    if (!["text", "json", "markdown", "sarif"].includes(format))
+      throw new UsageError(`Invalid --format: ${format}`);
     const failOnArg = v["fail-on"] as string | undefined;
-    if (failOnArg && !["error", "warning", "info", "never"].includes(failOnArg)) throw new UsageError(`Invalid --fail-on: ${failOnArg}`);
+    if (failOnArg && !["error", "warning", "info", "never"].includes(failOnArg))
+      throw new UsageError(`Invalid --fail-on: ${failOnArg}`);
 
     // Config
     let config: Record<string, unknown> = {};
-    const cfgPath = v.config ? resolve(io.cwd, v.config as string) : CONFIG_NAMES.map((n) => resolve(io.cwd, n)).find((p) => existsSync(p));
+    const cfgPath = v.config
+      ? resolve(io.cwd, v.config as string)
+      : CONFIG_NAMES.map((n) => resolve(io.cwd, n)).find((p) => existsSync(p));
     if (v.config && !existsSync(cfgPath!)) throw new IOError(`Config file not found: ${v.config}`);
     if (cfgPath) {
       const loaded = loadJson(cfgPath, "config file");
-      if (typeof loaded !== "object" || loaded === null || Array.isArray(loaded)) throw new ConfigError(["config file must contain a JSON object"]);
+      if (typeof loaded !== "object" || loaded === null || Array.isArray(loaded))
+        throw new ConfigError(["config file must contain a JSON object"]);
       config = { ...(loaded as Record<string, unknown>) };
     }
     if (failOnArg) config.failOn = failOnArg;
-    if (v.exclude) config.exclude = [...((config.exclude as string[]) ?? []), ...(v.exclude as string[])];
+    if (v.exclude)
+      config.exclude = [...((config.exclude as string[]) ?? []), ...(v.exclude as string[])];
     if (v.baseline) {
-      const b = loadJson(resolve(io.cwd, v.baseline as string), "baseline file") as { fingerprints?: unknown };
-      if (!b || !Array.isArray(b.fingerprints)) throw new ConfigError(["baseline file must contain a `fingerprints` array"]);
+      const b = loadJson(resolve(io.cwd, v.baseline as string), "baseline file") as {
+        fingerprints?: unknown;
+      };
+      if (!b || !Array.isArray(b.fingerprints))
+        throw new ConfigError(["baseline file must contain a `fingerprints` array"]);
       config.baseline = [...((config.baseline as string[]) ?? []), ...(b.fingerprints as string[])];
     }
 
@@ -190,13 +204,22 @@ export function run(argv: string[], io: IO): number {
 
     if (v["write-baseline"]) {
       const fp = [...new Set(result.findings.map((f) => f.fingerprint))].sort();
-      writeFileSync(resolve(io.cwd, v["write-baseline"] as string), JSON.stringify({ version: 1, fingerprints: fp }, null, 2) + "\n");
+      writeFileSync(
+        resolve(io.cwd, v["write-baseline"] as string),
+        JSON.stringify({ version: 1, fingerprints: fp }, null, 2) + "\n",
+      );
       io.stderr(`Wrote ${fp.length} fingerprint(s) to ${v["write-baseline"]}\n`);
       return EXIT.OK;
     }
 
     const report =
-      format === "json" ? toJSON(result) : format === "markdown" ? toMarkdown(result) : format === "sarif" ? toSarif(result) : formatText(result);
+      format === "json"
+        ? toJSON(result)
+        : format === "markdown"
+          ? toMarkdown(result)
+          : format === "sarif"
+            ? toSarif(result)
+            : formatText(result);
     if (v.output) writeFileSync(resolve(io.cwd, v.output as string), report);
     else io.stdout(report);
     if (files.length === 0) io.stderr("warning: no .sql files found\n");
