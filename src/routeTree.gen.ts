@@ -15,6 +15,7 @@ import { Route as AnalyzerRouteImport } from './routes/analyzer'
 import { Route as DocsRouteImport } from './routes/docs'
 import { Route as PlaygroundRouteImport } from './routes/playground'
 import { Route as RulesRouteImport } from './routes/rules'
+import { Route as ApiClaudeRouteImport } from './routes/api/claude'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -46,6 +47,11 @@ const RulesRoute = RulesRouteImport.update({
   path: '/rules',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiClaudeRoute = ApiClaudeRouteImport.update({
+  id: '/api/claude',
+  path: '/api/claude',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -54,6 +60,7 @@ export interface FileRoutesByFullPath {
   '/docs': typeof DocsRoute
   '/playground': typeof PlaygroundRoute
   '/rules': typeof RulesRoute
+  '/api/claude': typeof ApiClaudeRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -62,6 +69,7 @@ export interface FileRoutesByTo {
   '/docs': typeof DocsRoute
   '/playground': typeof PlaygroundRoute
   '/rules': typeof RulesRoute
+  '/api/claude': typeof ApiClaudeRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -71,12 +79,27 @@ export interface FileRoutesById {
   '/docs': typeof DocsRoute
   '/playground': typeof PlaygroundRoute
   '/rules': typeof RulesRoute
+  '/api/claude': typeof ApiClaudeRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/about' | '/analyzer' | '/docs' | '/playground' | '/rules'
+  fullPaths:
+    | '/'
+    | '/about'
+    | '/analyzer'
+    | '/docs'
+    | '/playground'
+    | '/rules'
+    | '/api/claude'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about' | '/analyzer' | '/docs' | '/playground' | '/rules'
+  to:
+    | '/'
+    | '/about'
+    | '/analyzer'
+    | '/docs'
+    | '/playground'
+    | '/rules'
+    | '/api/claude'
   id:
     | '__root__'
     | '/'
@@ -85,6 +108,7 @@ export interface FileRouteTypes {
     | '/docs'
     | '/playground'
     | '/rules'
+    | '/api/claude'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -94,6 +118,7 @@ export interface RootRouteChildren {
   DocsRoute: typeof DocsRoute
   PlaygroundRoute: typeof PlaygroundRoute
   RulesRoute: typeof RulesRoute
+  ApiClaudeRoute: typeof ApiClaudeRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -140,6 +165,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RulesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/claude': {
+      id: '/api/claude'
+      path: '/api/claude'
+      fullPath: '/api/claude'
+      preLoaderRoute: typeof ApiClaudeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -150,6 +182,7 @@ const rootRouteChildren: RootRouteChildren = {
   DocsRoute: DocsRoute,
   PlaygroundRoute: PlaygroundRoute,
   RulesRoute: RulesRoute,
+  ApiClaudeRoute: ApiClaudeRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

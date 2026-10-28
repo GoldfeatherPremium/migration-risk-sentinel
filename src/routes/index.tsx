@@ -9,6 +9,8 @@ import { SITE } from "@/lib/site";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { title: "Supabase Migration Guard — catch risky SQL migrations before deploy" },
       {
         name: "description",
@@ -72,8 +74,9 @@ function Home() {
               </Button>
             </div>
             <p className="mt-4 text-sm text-muted-foreground">
-              Runs locally. Never connects to a database. Cannot guarantee safety — it surfaces risk
-              for human review.
+              Static checks run locally. Optional Claude explanations require consent. Never
+              connects to your database. Cannot guarantee safety — it surfaces risk for human
+              review.
             </p>
           </div>
 
@@ -111,7 +114,7 @@ function Home() {
             {
               icon: Lock,
               title: "Local by default",
-              body: "The web analyzer runs in your browser; the CLI runs in your Node process. No uploads, telemetry or credentials.",
+              body: "The web analyzer runs in your browser; the CLI runs in your Node process. SQL stays local unless you explicitly send a statement to Claude. No database credentials.",
             },
             {
               icon: Terminal,

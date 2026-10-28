@@ -8,6 +8,8 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/playground")({
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { title: "Playground — Supabase Migration Guard" },
       {
         name: "description",

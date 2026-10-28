@@ -30,6 +30,7 @@ import {
 import type { Example } from "@/lib/examples";
 import { download, readSqlFiles } from "@/lib/upload";
 import { cn } from "@/lib/utils";
+import { ClaudeExplanation } from "@/components/claude-explanation";
 
 const RULES = getRuleMeta();
 type GroupBy = "severity" | "file" | "rule";
@@ -47,6 +48,7 @@ export function Workbench({ initialFiles, examples, sampleNotice }: Props) {
   const [active, setActive] = useState(0);
   const [overrides, setOverrides] = useState<Record<string, SeverityOrOff>>({});
   const [result, setResult] = useState<AnalysisResult | null>(null);
+  const [analyzedFiles, setAnalyzedFiles] = useState(initialFiles);
   const [error, setError] = useState<string | null>(null);
   const [sevFilter, setSevFilter] = useState<Set<Severity>>(new Set(SEVS));
   const [query, setQuery] = useState("");
@@ -63,6 +65,7 @@ export function Workbench({ initialFiles, examples, sampleNotice }: Props) {
       for (const [id, sev] of Object.entries(overrides)) rules[id] = sev;
       const r = analyzeMigration({ files: target, config: { rules }, dialect: "postgres" });
       setResult(r);
+      setAnalyzedFiles(target.map((f) => ({ ...f })));
       setError(null);
     } catch (e) {
       setResult(null);
@@ -153,7 +156,10 @@ export function Workbench({ initialFiles, examples, sampleNotice }: Props) {
     return entries;
   }, [visible, groupBy]);
 
-  const sourceByPath = useMemo(() => new Map(files.map((f) => [f.path, f.content])), [files]);
+  const sourceByPath = useMemo(
+    () => new Map(analyzedFiles.map((f) => [f.path, f.content])),
+    [analyzedFiles],
+  );
 
   return (
     <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
@@ -294,7 +300,8 @@ export function Workbench({ initialFiles, examples, sampleNotice }: Props) {
             <Play /> Analyze {files.length > 1 ? `${files.length} files` : ""}
           </Button>
           <p className="text-xs text-muted-foreground">
-            Runs entirely in your browser. SQL is never sent anywhere or executed.
+            Analyze runs locally. Only optional Claude explanations share SQL with your consent.
+            Nothing is executed.
           </p>
         </div>
       </section>
@@ -499,6 +506,7 @@ function FindingCard({ f, source }: { f: Finding; source: string }) {
           {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
         </button>
       </div>
+      <ClaudeExplanation finding={f} source={source} />
     </li>
   );
 }
