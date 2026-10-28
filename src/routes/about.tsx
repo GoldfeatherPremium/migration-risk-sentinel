@@ -5,6 +5,8 @@ import { SITE } from "@/lib/site";
 export const Route = createFileRoute("/about")({
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { title: "About & Contributing — Supabase Migration Guard" },
       {
         name: "description",
@@ -37,7 +39,8 @@ function AboutPage() {
             limitation.
           </li>
           <li>
-            Keep SQL private: analysis runs locally, with no accounts, credentials or telemetry.
+            Keep SQL local by default: deterministic checks run locally. Optional Claude
+            explanations share only explicitly consented SQL.
           </li>
           <li>Stay small and deterministic so results are reproducible in CI.</li>
         </ul>

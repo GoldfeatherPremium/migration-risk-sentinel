@@ -9,6 +9,8 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/rules")({
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { title: "Rules — Supabase Migration Guard" },
       {
         name: "description",

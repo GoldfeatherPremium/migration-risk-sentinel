@@ -156,7 +156,10 @@ export function Workbench({ initialFiles, examples, sampleNotice }: Props) {
     return entries;
   }, [visible, groupBy]);
 
-  const sourceByPath = useMemo(() => new Map(analyzedFiles.map((f) => [f.path, f.content])), [analyzedFiles]);
+  const sourceByPath = useMemo(
+    () => new Map(analyzedFiles.map((f) => [f.path, f.content])),
+    [analyzedFiles],
+  );
 
   return (
     <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
@@ -297,7 +300,8 @@ export function Workbench({ initialFiles, examples, sampleNotice }: Props) {
             <Play /> Analyze {files.length > 1 ? `${files.length} files` : ""}
           </Button>
           <p className="text-xs text-muted-foreground">
-            Analyze runs locally. Only optional Claude explanations share SQL with your consent. Nothing is executed.
+            Analyze runs locally. Only optional Claude explanations share SQL with your consent.
+            Nothing is executed.
           </p>
         </div>
       </section>

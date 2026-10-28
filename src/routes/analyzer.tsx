@@ -6,6 +6,8 @@ import { EXAMPLES } from "@/lib/examples";
 export const Route = createFileRoute("/analyzer")({
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { title: "Analyzer — Supabase Migration Guard" },
       {
         name: "description",
@@ -15,7 +17,7 @@ export const Route = createFileRoute("/analyzer")({
       { property: "og:title", content: "Analyzer — Supabase Migration Guard" },
       {
         property: "og:description",
-        content: "Analyze SQL migrations locally in your browser. Nothing is uploaded.",
+        content: "Local SQL analysis with optional, consent-gated Claude explanations.",
       },
     ],
   }),

@@ -109,7 +109,11 @@ Full rationale, remediation and limitations: [`docs/rules.md`](docs/rules.md) or
 
 ## Privacy and security
 
-Analysis is local: browser or your Node process. No uploads, accounts, credentials, telemetry or SQL execution. The web app loads fonts from Google Fonts (no SQL is sent). See [`SECURITY.md`](SECURITY.md) and [`docs/privacy.md`](docs/privacy.md).
+Deterministic analysis is local: browser or your Node process. The optional **Explain with Claude** feature previews an editable statement and sends it, with rule metadata, only after explicit consent. It uses Claude Sonnet 5 through Lovable Cloud, and Anthropic may retain submitted data under its provider policy. No other files are sent. AI advice is unverified and never applied or executed; CLI and Action remain offline. The app does not persist SQL or explanations, but gateway/provider processing and retention policies apply. AI usage consumes workspace credits. The web app also loads fonts from Google Fonts (no SQL is included in font requests). See [`SECURITY.md`](SECURITY.md) and [`docs/privacy.md`](docs/privacy.md).
+
+### Optional Claude setup
+
+Cloud provisions the server-only `LOVABLE_API_KEY`; never use a browser-exposed key. Apply the included migration for the server-only `ai_access_pause` table. A 402/403 access failure stores a durable pause with a safe message, never SQL. After restoring credits or provider access, the owner clears that row in Lovable Cloud’s table editor before starting a fresh request. There are no automated requests or retries. This optional public endpoint has no per-user rate limiter; keep the site private when public AI credit exposure is unacceptable. Local checks work without AI configuration.
 
 ## Contributing
 

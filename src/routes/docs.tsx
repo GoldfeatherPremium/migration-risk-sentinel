@@ -5,6 +5,8 @@ import { SITE } from "@/lib/site";
 export const Route = createFileRoute("/docs")({
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       { title: "Documentation — Supabase Migration Guard" },
       {
         name: "description",
@@ -206,15 +208,17 @@ result.findings;  // deterministic order: file, line, column, rule`}</CodeBlock>
           <h2 id="privacy">Security & privacy</h2>
           <ul>
             <li>
-              The web analyzer runs entirely in your browser. SQL you paste or upload is read with
-              the File API and never sent to a server, analytics or third party.
+              Deterministic analysis runs in your browser. Optional Claude explanations send only
+              the SQL preview you explicitly approve and the selected rule’s details through Lovable
+              Cloud to Anthropic. Anthropic may retain that data under its provider policy. No other
+              files are sent.
             </li>
             <li>
               The CLI and GitHub Action run locally / on your runner. They make no network requests
               during analysis; the action downloads pinned npm packages once to build the CLI.
             </li>
             <li>
-              No authentication, database connection, password or service-role key is ever
+              No database connection to your project, password or service-role key is ever
               requested. SQL is never executed.
             </li>
             <li>
