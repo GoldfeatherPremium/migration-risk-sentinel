@@ -171,7 +171,12 @@ export function ClaudeExplanation({ finding, source }: { finding: Finding; sourc
           )}
           {text && (
             <div className="prose-doc min-w-0 break-words border-t pt-4 text-sm leading-relaxed">
-              <ReactMarkdown skipHtml components={{ img: () => null, a: ({ children }) => <span>{children}</span> }}>{text}</ReactMarkdown>
+              <ReactMarkdown
+                skipHtml
+                components={{ img: () => null, a: ({ children }) => <span>{children}</span> }}
+              >
+                {text}
+              </ReactMarkdown>
             </div>
           )}
           <p className="text-xs text-muted-foreground">

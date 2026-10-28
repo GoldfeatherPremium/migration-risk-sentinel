@@ -50,16 +50,22 @@ export async function handleExplanation(request: Request) {
   let upstreamStatus = 200;
   let upstreamMessage = "";
   let resolveHeaders: () => void = () => {};
-  const headersReady = new Promise<void>((resolve) => { resolveHeaders = resolve; });
+  const headersReady = new Promise<void>((resolve) => {
+    resolveHeaders = resolve;
+  });
   const provider = createAnthropic({
     apiKey: key,
     baseURL: "https://ai.gateway.lovable.dev/v1",
     headers: { "X-Lovable-AIG-SDK": "vercel-ai-sdk" },
     fetch: async (url, init) => {
       let response: Response;
-      try { response = await run.fetch(url, init); } catch (error) {
+      try {
+        response = await run.fetch(url, init);
+      } catch (error) {
         upstreamStatus = abort.signal.aborted ? 499 : 503;
-        upstreamMessage = abort.signal.aborted ? "Request stopped." : "Could not reach Claude. No automatic retry was made.";
+        upstreamMessage = abort.signal.aborted
+          ? "Request stopped."
+          : "Could not reach Claude. No automatic retry was made.";
         resolveHeaders();
         throw error;
       }
