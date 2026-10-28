@@ -472,7 +472,8 @@ export function parseStatementTokens(tokens: Token[]): ParsedStatement {
       const table = c.parseName() ?? makeName(null, "?");
       return { kind: "create_index", name, table, unique, concurrently, ifNotExists };
     }
-    const temporary = !!(c.acceptWord("GLOBAL", "LOCAL") && false) || !!c.acceptWord("TEMP", "TEMPORARY");
+    c.acceptWord("GLOBAL", "LOCAL");
+    const temporary = !!c.acceptWord("TEMP", "TEMPORARY");
     c.acceptWord("UNLOGGED");
     if (c.acceptWord("TABLE")) {
       const ifNotExists = c.acceptSeq("IF", "NOT", "EXISTS");
