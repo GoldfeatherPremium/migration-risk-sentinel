@@ -1,7 +1,13 @@
 import { isExcluded, resolveConfig, type ResolvedConfig } from "./config.js";
 import { parseFile, type ParsedFile, type SourceLocation, type Statement } from "./parser.js";
 import { RULES, type FileContext, type RawReport, type RuleDefinition } from "./rules.js";
-import type { AnalysisResult, Finding, MigrationFile, Severity, SuppressedFinding } from "./types.js";
+import type {
+  AnalysisResult,
+  Finding,
+  MigrationFile,
+  Severity,
+  SuppressedFinding,
+} from "./types.js";
 import { VERSION } from "./version.js";
 
 export const MAX_FILE_BYTES = 2 * 1024 * 1024;
@@ -57,10 +63,19 @@ function buildContext(file: ParsedFile, cfg: ResolvedConfig): FileContext {
       continue;
     }
     inTransaction.push(inTx);
-    if (p.kind === "create_table" && !createdTables.has(p.table.key)) createdTables.set(p.table.key, s.index);
-    if (p.kind === "create_index" && p.name && !createdIndexes.has(p.name.key)) createdIndexes.set(p.name.key, s.index);
+    if (p.kind === "create_table" && !createdTables.has(p.table.key))
+      createdTables.set(p.table.key, s.index);
+    if (p.kind === "create_index" && p.name && !createdIndexes.has(p.name.key))
+      createdIndexes.set(p.name.key, s.index);
   }
-  return { file, inTransaction, hasExplicitTransaction, createdTables, createdIndexes, assumeImplicitTransaction: cfg.assumeImplicitTransaction };
+  return {
+    file,
+    inTransaction,
+    hasExplicitTransaction,
+    createdTables,
+    createdIndexes,
+    assumeImplicitTransaction: cfg.assumeImplicitTransaction,
+  };
 }
 
 interface Directive {
@@ -68,7 +83,8 @@ interface Directive {
   reason: string | null;
 }
 
-const DIRECTIVE_RX = /^\s*migration-guard-ignore(-file)?\s+([A-Za-z0-9_,\s]+?)(?:\s+(?:--|:)\s*(.*?))?\s*$/;
+const DIRECTIVE_RX =
+  /^\s*migration-guard-ignore(-file)?\s+([A-Za-z0-9_,\s]+?)(?:\s+(?:--|:)\s*(.*?))?\s*$/;
 
 function parseDirective(text: string): { file: boolean; d: Directive } | null {
   const m = DIRECTIVE_RX.exec(text);
@@ -100,22 +116,35 @@ export function compareFindings(a: Finding, b: Finding): number {
 }
 
 export function analyzeMigration(options: AnalyzeOptions): AnalysisResult {
-  if (!options || !Array.isArray(options.files)) throw new AnalyzerInputError("`files` must be an array of { path, content }.");
-  if (options.dialect !== undefined && options.dialect !== "postgres") throw new AnalyzerInputError(`Unsupported dialect: ${String(options.dialect)}`);
-  if (options.files.length > MAX_FILES) throw new AnalyzerInputError(`Too many files (max ${MAX_FILES}).`);
+  if (!options || !Array.isArray(options.files))
+    throw new AnalyzerInputError("`files` must be an array of { path, content }.");
+  if (options.dialect !== undefined && options.dialect !== "postgres")
+    throw new AnalyzerInputError(`Unsupported dialect: ${String(options.dialect)}`);
+  if (options.files.length > MAX_FILES)
+    throw new AnalyzerInputError(`Too many files (max ${MAX_FILES}).`);
   const paths = new Set<string>();
   for (const f of options.files) {
-    if (!f || typeof f.path !== "string" || typeof f.content !== "string") throw new AnalyzerInputError("Each file needs a string `path` and string `content`.");
-    if (f.content.length > MAX_FILE_BYTES) throw new AnalyzerInputError(`${f.path} exceeds the ${MAX_FILE_BYTES} byte limit.`);
+    if (!f || typeof f.path !== "string" || typeof f.content !== "string")
+      throw new AnalyzerInputError("Each file needs a string `path` and string `content`.");
+    if (f.content.length > MAX_FILE_BYTES)
+      throw new AnalyzerInputError(`${f.path} exceeds the ${MAX_FILE_BYTES} byte limit.`);
     const p = normalizePath(f.path);
     if (paths.has(p)) throw new AnalyzerInputError(`Duplicate file path: ${p}`);
     paths.add(p);
   }
 
   const config = resolveConfig(options.config, RULES);
-  const all = options.files.map((f) => ({ path: normalizePath(f.path), content: f.content.replace(/^\uFEFF/, "") }));
-  const excludedFiles = all.filter((f) => isExcluded(f.path, config.exclude)).map((f) => f.path).sort();
-  const included = all.filter((f) => !excludedFiles.includes(f.path)).sort((a, b) => (a.path < b.path ? -1 : a.path > b.path ? 1 : 0));
+  const all = options.files.map((f) => ({
+    path: normalizePath(f.path),
+    content: f.content.replace(/^\uFEFF/, ""),
+  }));
+  const excludedFiles = all
+    .filter((f) => isExcluded(f.path, config.exclude))
+    .map((f) => f.path)
+    .sort();
+  const included = all
+    .filter((f) => !excludedFiles.includes(f.path))
+    .sort((a, b) => (a.path < b.path ? -1 : a.path > b.path ? 1 : 0));
 
   const parsed = included.map((f) => parseFile(f.path, f.content));
   const contexts = parsed.map((p) => buildContext(p, config));
@@ -124,33 +153,35 @@ export function analyzeMigration(options: AnalyzeOptions): AnalysisResult {
   const raw: { finding: Finding; stmt?: Statement }[] = [];
   const occurrence = new Map<string, number>();
 
-  const makeReporter = (rule: RuleDefinition, severity: Severity, ctx: FileContext) => (r: RawReport) => {
-    const loc: SourceLocation = r.loc ?? r.statement?.loc ?? { line: 1, column: 1, endLine: 1, endColumn: 1 };
-    const stmtNorm = r.statement ? r.statement.tokens.map((t) => t.raw).join(" ") : "";
-    const base = `${rule.id}|${ctx.file.path}|${stmtNorm}|${r.message}`;
-    const n = occurrence.get(base) ?? 0;
-    occurrence.set(base, n + 1);
-    // Rule-level severity override wins over the rule's contextual default only when explicitly configured.
-    const configured = config.rules[rule.id].severity as Severity;
-    const effective = configured !== rule.defaultSeverity ? configured : (r.severity ?? severity);
-    raw.push({
-      stmt: r.statement,
-      finding: {
-        ruleId: rule.id,
-        ruleName: rule.name,
-        severity: effective,
-        confidence: r.confidence ?? rule.confidence,
-        file: ctx.file.path,
-        line: loc.line,
-        column: loc.column,
-        endLine: loc.endLine,
-        endColumn: loc.endColumn,
-        message: r.message,
-        remediation: rule.remediation,
-        fingerprint: hash(`${base}|${n}`),
-      },
-    });
-  };
+  const makeReporter =
+    (rule: RuleDefinition, severity: Severity, ctx: FileContext) => (r: RawReport) => {
+      const loc: SourceLocation = r.loc ??
+        r.statement?.loc ?? { line: 1, column: 1, endLine: 1, endColumn: 1 };
+      const stmtNorm = r.statement ? r.statement.tokens.map((t) => t.raw).join(" ") : "";
+      const base = `${rule.id}|${ctx.file.path}|${stmtNorm}|${r.message}`;
+      const n = occurrence.get(base) ?? 0;
+      occurrence.set(base, n + 1);
+      // Rule-level severity override wins over the rule's contextual default only when explicitly configured.
+      const configured = config.rules[rule.id].severity as Severity;
+      const effective = configured !== rule.defaultSeverity ? configured : (r.severity ?? severity);
+      raw.push({
+        stmt: r.statement,
+        finding: {
+          ruleId: rule.id,
+          ruleName: rule.name,
+          severity: effective,
+          confidence: r.confidence ?? rule.confidence,
+          file: ctx.file.path,
+          line: loc.line,
+          column: loc.column,
+          endLine: loc.endLine,
+          endColumn: loc.endColumn,
+          message: r.message,
+          remediation: rule.remediation,
+          fingerprint: hash(`${base}|${n}`),
+        },
+      });
+    };
 
   for (const rule of RULES) {
     const rc = config.rules[rule.id];
@@ -159,7 +190,8 @@ export function analyzeMigration(options: AnalyzeOptions): AnalysisResult {
     for (const ctx of contexts) {
       const report = makeReporter(rule, sev, ctx);
       if (rule.checkFile) rule.checkFile(ctx, report, rc.options);
-      if (rule.checkStatement) for (const s of ctx.file.statements) rule.checkStatement(s, ctx, report, rc.options);
+      if (rule.checkStatement)
+        for (const s of ctx.file.statements) rule.checkStatement(s, ctx, report, rc.options);
     }
     if (rule.checkProject) {
       rule.checkProject(contexts, (path) => makeReporter(rule, sev, byPath.get(path)!), rc.options);
@@ -237,7 +269,10 @@ export function analyzeMigration(options: AnalyzeOptions): AnalysisResult {
 }
 
 /** True when findings reach the configured failure threshold. */
-export function shouldFail(result: AnalysisResult, failOn: Severity | "never" = result.config.failOn): boolean {
+export function shouldFail(
+  result: AnalysisResult,
+  failOn: Severity | "never" = result.config.failOn,
+): boolean {
   if (failOn === "never") return false;
   const limit = SEV_ORDER[failOn];
   return result.findings.some((f) => SEV_ORDER[f.severity] <= limit);

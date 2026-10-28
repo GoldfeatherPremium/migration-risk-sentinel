@@ -41,8 +41,12 @@ describe("CLI", () => {
   });
 
   it("outputs markdown and sarif", () => {
-    expect(cli(["scan", "destructive.sql", "--format", "markdown"]).stdout).toContain("## Supabase Migration Guard report");
-    expect(JSON.parse(cli(["scan", "destructive.sql", "--format", "sarif"]).stdout).version).toBe("2.1.0");
+    expect(cli(["scan", "destructive.sql", "--format", "markdown"]).stdout).toContain(
+      "## Supabase Migration Guard report",
+    );
+    expect(JSON.parse(cli(["scan", "destructive.sql", "--format", "sarif"]).stdout).version).toBe(
+      "2.1.0",
+    );
   });
 
   it("uses exit code 3 for missing paths and 2 for usage/config errors", () => {
@@ -63,17 +67,25 @@ describe("CLI", () => {
     const dir = mkdtempSync(join(tmpdir(), "mg-"));
     writeFileSync(join(dir, "m.sql"), "drop table a;");
     expect(cli(["scan", "."], dir).code).toBe(EXIT.FINDINGS);
-    writeFileSync(join(dir, "migration-guard.config.json"), JSON.stringify({ rules: { MIG001: "warning" } }));
+    writeFileSync(
+      join(dir, "migration-guard.config.json"),
+      JSON.stringify({ rules: { MIG001: "warning" } }),
+    );
     expect(cli(["scan", "."], dir).code).toBe(EXIT.OK);
     writeFileSync(join(dir, "migration-guard.config.json"), "{}");
     expect(cli(["scan", ".", "--write-baseline", "base.json"], dir).code).toBe(EXIT.OK);
-    expect(JSON.parse(readFileSync(join(dir, "base.json"), "utf8")).fingerprints.length).toBeGreaterThan(0);
+    expect(
+      JSON.parse(readFileSync(join(dir, "base.json"), "utf8")).fingerprints.length,
+    ).toBeGreaterThan(0);
     expect(cli(["scan", ".", "--baseline", "base.json"], dir).code).toBe(EXIT.OK);
   });
 
   it("runs as a real process via the entry point", () => {
     const entry = resolve(__dirname, "../packages/cli/src/cli.ts");
-    const p = spawnSync("bun", [entry, "scan", "destructive.sql", "--format", "json"], { cwd: FIXTURES, encoding: "utf8" });
+    const p = spawnSync("bun", [entry, "scan", "destructive.sql", "--format", "json"], {
+      cwd: FIXTURES,
+      encoding: "utf8",
+    });
     if (p.error) return; // bun unavailable: covered by in-process tests above
     expect(p.status).toBe(1);
     expect(JSON.parse(p.stdout).summary.error).toBeGreaterThan(0);

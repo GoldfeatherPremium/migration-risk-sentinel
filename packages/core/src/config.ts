@@ -16,11 +16,15 @@ const ruleSetting = z.union([
 export const ConfigSchema = z
   .object({
     $schema: z.string().optional(),
-    rules: z.record(z.string().regex(/^MIG\d{3}$/, "Rule IDs look like MIG001"), ruleSetting).default({}),
+    rules: z
+      .record(z.string().regex(/^MIG\d{3}$/, "Rule IDs look like MIG001"), ruleSetting)
+      .default({}),
     exclude: z.array(z.string().min(1)).default([]),
     failOn: z.enum(["error", "warning", "info", "never"]).default("error"),
     assumeImplicitTransaction: z.boolean().default(false),
-    baseline: z.array(z.string().regex(/^[0-9a-f]{16}$/, "Baseline entries are 16-char hex fingerprints")).default([]),
+    baseline: z
+      .array(z.string().regex(/^[0-9a-f]{16}$/, "Baseline entries are 16-char hex fingerprints"))
+      .default([]),
   })
   .strict();
 
@@ -43,11 +47,17 @@ export class ConfigError extends Error {
 
 export function resolveConfig(
   input: unknown,
-  knownRules: { id: string; defaultSeverity: Severity; options?: Record<string, { default: number | boolean }> }[],
+  knownRules: {
+    id: string;
+    defaultSeverity: Severity;
+    options?: Record<string, { default: number | boolean }>;
+  }[],
 ): ResolvedConfig {
   const parsed = ConfigSchema.safeParse(input ?? {});
   if (!parsed.success) {
-    throw new ConfigError(parsed.error.issues.map((i) => `${i.path.join(".") || "(root)"}: ${i.message}`));
+    throw new ConfigError(
+      parsed.error.issues.map((i) => `${i.path.join(".") || "(root)"}: ${i.message}`),
+    );
   }
   const cfg = parsed.data;
   const known = new Map(knownRules.map((r) => [r.id, r]));
@@ -67,9 +77,13 @@ export function resolveConfig(
     else {
       for (const k of Object.keys(setting.options ?? {})) {
         if (!(k in defaults)) issues.push(`rules.${r.id}.options.${k}: unknown option`);
-        else if (typeof setting.options![k] !== typeof defaults[k]) issues.push(`rules.${r.id}.options.${k}: expected ${typeof defaults[k]}`);
+        else if (typeof setting.options![k] !== typeof defaults[k])
+          issues.push(`rules.${r.id}.options.${k}: expected ${typeof defaults[k]}`);
       }
-      rules[r.id] = { severity: setting.severity ?? r.defaultSeverity, options: { ...defaults, ...setting.options } };
+      rules[r.id] = {
+        severity: setting.severity ?? r.defaultSeverity,
+        options: { ...defaults, ...setting.options },
+      };
     }
   }
   if (issues.length) throw new ConfigError(issues);

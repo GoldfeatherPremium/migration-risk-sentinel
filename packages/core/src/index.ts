@@ -1,4 +1,12 @@
-export { analyzeMigration, shouldFail, compareFindings, normalizePath, AnalyzerInputError, MAX_FILE_BYTES, MAX_FILES } from "./analyze.js";
+export {
+  analyzeMigration,
+  shouldFail,
+  compareFindings,
+  normalizePath,
+  AnalyzerInputError,
+  MAX_FILE_BYTES,
+  MAX_FILES,
+} from "./analyze.js";
 export type { AnalyzeOptions } from "./analyze.js";
 export { resolveConfig, ConfigSchema, ConfigError, isExcluded, globToRegExp } from "./config.js";
 export type { UserConfig, ResolvedConfig } from "./config.js";

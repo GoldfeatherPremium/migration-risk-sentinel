@@ -15,7 +15,10 @@ export function sanitizeFileName(name: string): string {
 }
 
 /** Read user-selected files locally. Nothing is uploaded anywhere. */
-export async function readSqlFiles(list: FileList | File[], existing: number): Promise<UploadResult> {
+export async function readSqlFiles(
+  list: FileList | File[],
+  existing: number,
+): Promise<UploadResult> {
   const files: UploadResult["files"] = [];
   const rejected: UploadResult["rejected"] = [];
   for (const f of Array.from(list)) {

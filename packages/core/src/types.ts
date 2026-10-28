@@ -38,7 +38,10 @@ export interface RuleMeta {
   rationale: string;
   remediation: string;
   limitations: string[];
-  options?: Record<string, { type: "number" | "boolean"; default: number | boolean; description: string }>;
+  options?: Record<
+    string,
+    { type: "number" | "boolean"; default: number | boolean; description: string }
+  >;
 }
 
 export interface FileResult {

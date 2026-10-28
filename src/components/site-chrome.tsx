@@ -24,26 +24,50 @@ export function SiteHeader() {
         </Link>
         <nav className="ml-auto hidden items-center gap-1 md:flex" aria-label="Main">
           {NAV.map((n) => (
-            <Link key={n.to} to={n.to} className="rounded-md px-3 py-1.5 text-sm text-muted-foreground hover:bg-muted hover:text-foreground" activeProps={{ className: "text-foreground bg-muted" }}>
+            <Link
+              key={n.to}
+              to={n.to}
+              className="rounded-md px-3 py-1.5 text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
+              activeProps={{ className: "text-foreground bg-muted" }}
+            >
               {n.label}
             </Link>
           ))}
-          <a href={SITE.repoUrl} className="ml-2 rounded-md border px-3 py-1.5 text-sm hover:bg-muted" rel="noreferrer" target="_blank">
+          <a
+            href={SITE.repoUrl}
+            className="ml-2 rounded-md border px-3 py-1.5 text-sm hover:bg-muted"
+            rel="noreferrer"
+            target="_blank"
+          >
             GitHub
           </a>
         </nav>
-        <button className="ml-auto rounded-md p-2 md:hidden" aria-label={open ? "Close menu" : "Open menu"} onClick={() => setOpen(!open)}>
+        <button
+          className="ml-auto rounded-md p-2 md:hidden"
+          aria-label={open ? "Close menu" : "Open menu"}
+          onClick={() => setOpen(!open)}
+        >
           {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </button>
       </div>
       {open && (
         <nav className="border-t px-4 py-2 md:hidden" aria-label="Mobile">
           {NAV.map((n) => (
-            <Link key={n.to} to={n.to} onClick={() => setOpen(false)} className="block rounded-md px-2 py-2 text-sm">
+            <Link
+              key={n.to}
+              to={n.to}
+              onClick={() => setOpen(false)}
+              className="block rounded-md px-2 py-2 text-sm"
+            >
               {n.label}
             </Link>
           ))}
-          <a href={SITE.repoUrl} className="block px-2 py-2 text-sm" rel="noreferrer" target="_blank">
+          <a
+            href={SITE.repoUrl}
+            className="block px-2 py-2 text-sm"
+            rel="noreferrer"
+            target="_blank"
+          >
             GitHub
           </a>
         </nav>
@@ -58,9 +82,30 @@ export function SiteFooter() {
       <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-8 text-sm text-muted-foreground md:flex-row md:items-center md:justify-between">
         <p>MIT licensed. Static analysis only — it cannot guarantee a migration is safe.</p>
         <div className="flex flex-wrap gap-4">
-          <a href={SITE.issuesUrl} target="_blank" rel="noreferrer" className="hover:text-foreground">Issues</a>
-          <a href={SITE.releasesUrl} target="_blank" rel="noreferrer" className="hover:text-foreground">Releases</a>
-          <a href={SITE.securityUrl} target="_blank" rel="noreferrer" className="hover:text-foreground">Security</a>
+          <a
+            href={SITE.issuesUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="hover:text-foreground"
+          >
+            Issues
+          </a>
+          <a
+            href={SITE.releasesUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="hover:text-foreground"
+          >
+            Releases
+          </a>
+          <a
+            href={SITE.securityUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="hover:text-foreground"
+          >
+            Security
+          </a>
         </div>
       </div>
     </footer>
@@ -75,13 +120,27 @@ const SEV_CLASS: Record<Severity, string> = {
 
 export function SeverityBadge({ severity, className }: { severity: Severity; className?: string }) {
   return (
-    <span className={cn("inline-flex items-center rounded border px-1.5 py-0.5 font-mono text-[11px] font-medium uppercase tracking-wide", SEV_CLASS[severity], className)}>
+    <span
+      className={cn(
+        "inline-flex items-center rounded border px-1.5 py-0.5 font-mono text-[11px] font-medium uppercase tracking-wide",
+        SEV_CLASS[severity],
+        className,
+      )}
+    >
       {severity}
     </span>
   );
 }
 
-export function PageHeader({ eyebrow, title, children }: { eyebrow: string; title: string; children?: React.ReactNode }) {
+export function PageHeader({
+  eyebrow,
+  title,
+  children,
+}: {
+  eyebrow: string;
+  title: string;
+  children?: React.ReactNode;
+}) {
   return (
     <div className="border-b bg-card/50">
       <div className="mx-auto max-w-6xl px-4 py-10">
@@ -95,7 +154,12 @@ export function PageHeader({ eyebrow, title, children }: { eyebrow: string; titl
 
 export function CodeBlock({ children, className }: { children: string; className?: string }) {
   return (
-    <pre className={cn("overflow-x-auto rounded-lg bg-code p-4 text-[13px] leading-relaxed text-code-foreground", className)}>
+    <pre
+      className={cn(
+        "overflow-x-auto rounded-lg bg-code p-4 text-[13px] leading-relaxed text-code-foreground",
+        className,
+      )}
+    >
       <code>{children}</code>
     </pre>
   );

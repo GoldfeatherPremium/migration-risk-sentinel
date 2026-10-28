@@ -1,4 +1,15 @@
-import { Check, Copy, Download, FileCode2, Play, Plus, Search, Settings2, Trash2, Upload } from "lucide-react";
+import {
+  Check,
+  Copy,
+  Download,
+  FileCode2,
+  Play,
+  Plus,
+  Search,
+  Settings2,
+  Trash2,
+  Upload,
+} from "lucide-react";
 import { useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -116,20 +127,28 @@ export function Workbench({ initialFiles, examples, sampleNotice }: Props) {
     if (!result) return [];
     const q = query.trim().toLowerCase();
     return result.findings.filter(
-      (f) => sevFilter.has(f.severity) && (!q || `${f.ruleId} ${f.ruleName} ${f.message} ${f.file}`.toLowerCase().includes(q)),
+      (f) =>
+        sevFilter.has(f.severity) &&
+        (!q || `${f.ruleId} ${f.ruleName} ${f.message} ${f.file}`.toLowerCase().includes(q)),
     );
   }, [result, sevFilter, query]);
 
   const groups = useMemo(() => {
     const m = new Map<string, Finding[]>();
-    const keyOf = (f: Finding) => (groupBy === "severity" ? f.severity : groupBy === "file" ? f.file : `${f.ruleId} · ${f.ruleName}`);
+    const keyOf = (f: Finding) =>
+      groupBy === "severity"
+        ? f.severity
+        : groupBy === "file"
+          ? f.file
+          : `${f.ruleId} · ${f.ruleName}`;
     const order = groupBy === "severity" ? SEVS : null;
     for (const f of visible) {
       const k = keyOf(f);
       m.set(k, [...(m.get(k) ?? []), f]);
     }
     const entries = [...m.entries()];
-    if (order) entries.sort((a, b) => order.indexOf(a[0] as Severity) - order.indexOf(b[0] as Severity));
+    if (order)
+      entries.sort((a, b) => order.indexOf(a[0] as Severity) - order.indexOf(b[0] as Severity));
     else entries.sort((a, b) => a[0].localeCompare(b[0]));
     return entries;
   }, [visible, groupBy]);
@@ -151,39 +170,67 @@ export function Workbench({ initialFiles, examples, sampleNotice }: Props) {
               Load sample SQL…
             </option>
             {(["risky", "safe", "edge"] as const).map((k) => (
-              <optgroup key={k} label={k === "risky" ? "Risky" : k === "safe" ? "Safe" : "Edge cases"}>
-                {examples.filter((e) => e.kind === k).map((e) => (
-                  <option key={e.id} value={e.id}>
-                    {e.title}
-                  </option>
-                ))}
+              <optgroup
+                key={k}
+                label={k === "risky" ? "Risky" : k === "safe" ? "Safe" : "Edge cases"}
+              >
+                {examples
+                  .filter((e) => e.kind === k)
+                  .map((e) => (
+                    <option key={e.id} value={e.id}>
+                      {e.title}
+                    </option>
+                  ))}
               </optgroup>
             ))}
           </select>
           <Button variant="outline" size="sm" onClick={() => fileInput.current?.click()}>
             <Upload /> Upload .sql
           </Button>
-          <input ref={fileInput} type="file" accept=".sql,text/plain,application/sql" multiple hidden onChange={(e) => { void onUpload(e.target.files); e.target.value = ""; }} />
-          <Button variant="outline" size="sm" onClick={() => setShowSettings(!showSettings)} aria-expanded={showSettings}>
+          <input
+            ref={fileInput}
+            type="file"
+            accept=".sql,text/plain,application/sql"
+            multiple
+            hidden
+            onChange={(e) => {
+              void onUpload(e.target.files);
+              e.target.value = "";
+            }}
+          />
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowSettings(!showSettings)}
+            aria-expanded={showSettings}
+          >
             <Settings2 /> Rules
           </Button>
         </div>
 
         {showSettings && (
           <div className="max-h-72 overflow-y-auto rounded-lg border bg-card p-3">
-            <p className="mb-2 text-xs text-muted-foreground">Override severity or turn rules off for this session.</p>
+            <p className="mb-2 text-xs text-muted-foreground">
+              Override severity or turn rules off for this session.
+            </p>
             <ul className="space-y-1.5">
               {RULES.map((r) => (
                 <li key={r.id} className="flex items-center justify-between gap-2 text-sm">
-                  <span className="min-w-0 truncate"><span className="font-mono text-xs text-muted-foreground">{r.id}</span> {r.name}</span>
+                  <span className="min-w-0 truncate">
+                    <span className="font-mono text-xs text-muted-foreground">{r.id}</span> {r.name}
+                  </span>
                   <select
                     aria-label={`Severity for ${r.id}`}
                     className="h-7 rounded border bg-background px-1 text-xs"
                     value={overrides[r.id] ?? r.defaultSeverity}
-                    onChange={(e) => setOverrides({ ...overrides, [r.id]: e.target.value as SeverityOrOff })}
+                    onChange={(e) =>
+                      setOverrides({ ...overrides, [r.id]: e.target.value as SeverityOrOff })
+                    }
                   >
                     {(["error", "warning", "info", "off"] as const).map((s) => (
-                      <option key={s} value={s}>{s}</option>
+                      <option key={s} value={s}>
+                        {s}
+                      </option>
                     ))}
                   </select>
                 </li>
@@ -195,20 +242,44 @@ export function Workbench({ initialFiles, examples, sampleNotice }: Props) {
         <div className="overflow-hidden rounded-lg border bg-card">
           <div className="flex items-center gap-1 overflow-x-auto border-b bg-muted/60 px-1">
             {files.map((f, i) => (
-              <div key={f.path} className={cn("flex shrink-0 items-center border-b-2 border-transparent", i === active && "border-primary")}>
-                <button onClick={() => setActive(i)} className={cn("flex items-center gap-1.5 px-2 py-2 font-mono text-xs", i === active ? "text-foreground" : "text-muted-foreground")}>
+              <div
+                key={f.path}
+                className={cn(
+                  "flex shrink-0 items-center border-b-2 border-transparent",
+                  i === active && "border-primary",
+                )}
+              >
+                <button
+                  onClick={() => setActive(i)}
+                  className={cn(
+                    "flex items-center gap-1.5 px-2 py-2 font-mono text-xs",
+                    i === active ? "text-foreground" : "text-muted-foreground",
+                  )}
+                >
                   <FileCode2 className="h-3.5 w-3.5" aria-hidden /> {f.path}
                 </button>
-                <button onClick={() => removeFile(i)} className="p-1 text-muted-foreground hover:text-foreground" aria-label={`Remove ${f.path}`}>
+                <button
+                  onClick={() => removeFile(i)}
+                  className="p-1 text-muted-foreground hover:text-foreground"
+                  aria-label={`Remove ${f.path}`}
+                >
                   <Trash2 className="h-3 w-3" />
                 </button>
               </div>
             ))}
-            <button onClick={addFile} className="ml-1 shrink-0 p-2 text-muted-foreground hover:text-foreground" aria-label="Add file">
+            <button
+              onClick={addFile}
+              className="ml-1 shrink-0 p-2 text-muted-foreground hover:text-foreground"
+              aria-label="Add file"
+            >
               <Plus className="h-3.5 w-3.5" />
             </button>
           </div>
-          {isSample && <p className="border-b bg-sev-warning-soft px-3 py-1.5 text-xs text-sev-warning">Sample data — edit freely or upload your own files.</p>}
+          {isSample && (
+            <p className="border-b bg-sev-warning-soft px-3 py-1.5 text-xs text-sev-warning">
+              Sample data — edit freely or upload your own files.
+            </p>
+          )}
           <textarea
             aria-label={`SQL for ${current?.path}`}
             value={current?.content ?? ""}
@@ -222,13 +293,19 @@ export function Workbench({ initialFiles, examples, sampleNotice }: Props) {
           <Button onClick={() => run()}>
             <Play /> Analyze {files.length > 1 ? `${files.length} files` : ""}
           </Button>
-          <p className="text-xs text-muted-foreground">Runs entirely in your browser. SQL is never sent anywhere or executed.</p>
+          <p className="text-xs text-muted-foreground">
+            Runs entirely in your browser. SQL is never sent anywhere or executed.
+          </p>
         </div>
       </section>
 
       {/* Results */}
       <section aria-label="Findings" className="min-w-0 space-y-3">
-        {error && <div className="rounded-lg border border-sev-error/40 bg-sev-error-soft p-3 text-sm text-sev-error">{error}</div>}
+        {error && (
+          <div className="rounded-lg border border-sev-error/40 bg-sev-error-soft p-3 text-sm text-sev-error">
+            {error}
+          </div>
+        )}
         {!result && !error && (
           <div className="grid-paper flex h-full min-h-60 items-center justify-center rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">
             Results from the analyzer will appear here after you press Analyze.
@@ -247,38 +324,80 @@ export function Workbench({ initialFiles, examples, sampleNotice }: Props) {
                     setSevFilter(n);
                   }}
                   aria-pressed={sevFilter.has(s)}
-                  className={cn("rounded-lg border bg-card p-2 text-left transition-opacity", !sevFilter.has(s) && "opacity-40")}
+                  className={cn(
+                    "rounded-lg border bg-card p-2 text-left transition-opacity",
+                    !sevFilter.has(s) && "opacity-40",
+                  )}
                 >
                   <div className="text-2xl font-semibold tabular-nums">{result.summary[s]}</div>
                   <SeverityBadge severity={s} />
                 </button>
               ))}
               <div className="rounded-lg border bg-card p-2">
-                <div className="text-2xl font-semibold tabular-nums">{result.summary.suppressed}</div>
-                <span className="font-mono text-[11px] uppercase text-muted-foreground">suppressed</span>
+                <div className="text-2xl font-semibold tabular-nums">
+                  {result.summary.suppressed}
+                </div>
+                <span className="font-mono text-[11px] uppercase text-muted-foreground">
+                  suppressed
+                </span>
               </div>
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
               <div className="relative min-w-40 flex-1">
-                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" aria-hidden />
-                <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search findings" className="pl-8" aria-label="Search findings" />
+                <Search
+                  className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground"
+                  aria-hidden
+                />
+                <Input
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="Search findings"
+                  className="pl-8"
+                  aria-label="Search findings"
+                />
               </div>
-              <select aria-label="Group by" value={groupBy} onChange={(e) => setGroupBy(e.target.value as GroupBy)} className="h-9 rounded-md border bg-card px-2 text-sm">
+              <select
+                aria-label="Group by"
+                value={groupBy}
+                onChange={(e) => setGroupBy(e.target.value as GroupBy)}
+                className="h-9 rounded-md border bg-card px-2 text-sm"
+              >
                 <option value="severity">By severity</option>
                 <option value="file">By file</option>
                 <option value="rule">By rule</option>
               </select>
             </div>
             <div className="flex flex-wrap gap-2">
-              <Button variant="outline" size="sm" onClick={() => download("migration-guard.json", toJSON(result), "application/json")}><Download /> JSON</Button>
-              <Button variant="outline" size="sm" onClick={() => download("migration-guard.md", toMarkdown(result), "text/markdown")}><Download /> Markdown</Button>
-              <Button variant="outline" size="sm" onClick={() => download("migration-guard.sarif", toSarif(result), "application/sarif+json")}><Download /> SARIF</Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => download("migration-guard.json", toJSON(result), "application/json")}
+              >
+                <Download /> JSON
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => download("migration-guard.md", toMarkdown(result), "text/markdown")}
+              >
+                <Download /> Markdown
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() =>
+                  download("migration-guard.sarif", toSarif(result), "application/sarif+json")
+                }
+              >
+                <Download /> SARIF
+              </Button>
             </div>
 
             {result.findings.length === 0 && (
               <div className="rounded-lg border bg-accent p-4 text-sm text-accent-foreground">
-                No findings from {result.summary.filesAnalyzed} file(s). This does not prove the migration is safe — it means none of the implemented rules matched.
+                No findings from {result.summary.filesAnalyzed} file(s). This does not prove the
+                migration is safe — it means none of the implemented rules matched.
               </div>
             )}
 
@@ -286,12 +405,20 @@ export function Workbench({ initialFiles, examples, sampleNotice }: Props) {
               {groups.map(([key, list]) => (
                 <div key={key}>
                   <h3 className="mb-2 flex items-center gap-2 text-sm font-medium">
-                    {groupBy === "severity" ? <SeverityBadge severity={key as Severity} /> : <span className="truncate font-mono text-xs">{key}</span>}
+                    {groupBy === "severity" ? (
+                      <SeverityBadge severity={key as Severity} />
+                    ) : (
+                      <span className="truncate font-mono text-xs">{key}</span>
+                    )}
                     <span className="text-muted-foreground">{list.length}</span>
                   </h3>
                   <ul className="space-y-2">
                     {list.map((f) => (
-                      <FindingCard key={`${f.fingerprint}-${f.line}-${f.column}`} f={f} source={sourceByPath.get(f.file) ?? ""} />
+                      <FindingCard
+                        key={`${f.fingerprint}-${f.line}-${f.column}`}
+                        f={f}
+                        source={sourceByPath.get(f.file) ?? ""}
+                      />
                     ))}
                   </ul>
                 </div>
@@ -299,11 +426,14 @@ export function Workbench({ initialFiles, examples, sampleNotice }: Props) {
             </div>
             {result.suppressed.length > 0 && (
               <details className="rounded-lg border bg-card p-3 text-sm">
-                <summary className="cursor-pointer">Suppressed findings ({result.suppressed.length})</summary>
+                <summary className="cursor-pointer">
+                  Suppressed findings ({result.suppressed.length})
+                </summary>
                 <ul className="mt-2 space-y-1 text-muted-foreground">
                   {result.suppressed.map((s) => (
                     <li key={s.fingerprint} className="font-mono text-xs">
-                      {s.file}:{s.line} {s.ruleId} — {s.suppression.kind}{s.suppression.reason ? ` (${s.suppression.reason})` : ""}
+                      {s.file}:{s.line} {s.ruleId} — {s.suppression.kind}
+                      {s.suppression.reason ? ` (${s.suppression.reason})` : ""}
                     </li>
                   ))}
                 </ul>
@@ -333,13 +463,22 @@ function FindingCard({ f, source }: { f: Finding; source: string }) {
         <SeverityBadge severity={f.severity} />
         <span className="font-mono text-xs font-medium">{f.ruleId}</span>
         <span className="text-xs text-muted-foreground">{f.ruleName}</span>
-        {f.confidence === "heuristic" && <span className="rounded bg-muted px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-muted-foreground">heuristic</span>}
-        <span className="ml-auto font-mono text-xs text-muted-foreground">{f.file}:{f.line}:{f.column}</span>
+        {f.confidence === "heuristic" && (
+          <span className="rounded bg-muted px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-muted-foreground">
+            heuristic
+          </span>
+        )}
+        <span className="ml-auto font-mono text-xs text-muted-foreground">
+          {f.file}:{f.line}:{f.column}
+        </span>
       </div>
       <p className="mt-2 text-sm">{f.message}</p>
       <div className="mt-2 overflow-x-auto rounded bg-code py-1.5 font-mono text-[12px] text-code-foreground">
         {excerpt(source, f.line).map((l) => (
-          <div key={l.n} className={cn("flex whitespace-pre px-2", l.n === f.line && "bg-sev-error/25")}>
+          <div
+            key={l.n}
+            className={cn("flex whitespace-pre px-2", l.n === f.line && "bg-sev-error/25")}
+          >
             <span className="w-8 shrink-0 select-none pr-2 text-right text-code-muted">{l.n}</span>
             <span>{l.text}</span>
           </div>

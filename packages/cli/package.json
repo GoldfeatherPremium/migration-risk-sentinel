@@ -4,14 +4,31 @@
   "description": "Static analysis for PostgreSQL and Supabase SQL migrations. Never connects to a database.",
   "license": "MIT",
   "type": "module",
-  "bin": { "supabase-migration-guard": "dist/cli/src/cli.js" },
+  "bin": {
+    "supabase-migration-guard": "dist/cli/src/cli.js"
+  },
   "main": "dist/core/src/index.js",
   "types": "dist/core/src/index.d.ts",
-  "files": ["dist", "README.md", "LICENSE"],
-  "engines": { "node": ">=20" },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "build": "tsc -p tsconfig.build.json && chmod +x dist/cli/src/cli.js"
   },
-  "dependencies": { "zod": "^3.25.76" },
-  "keywords": ["supabase", "postgres", "migrations", "lint", "sql", "static-analysis"]
+  "dependencies": {
+    "zod": "^3.25.76"
+  },
+  "keywords": [
+    "supabase",
+    "postgres",
+    "migrations",
+    "lint",
+    "sql",
+    "static-analysis"
+  ]
 }
