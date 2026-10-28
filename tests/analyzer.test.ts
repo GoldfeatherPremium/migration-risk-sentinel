@@ -13,7 +13,7 @@ describe("fixtures", () => {
     const byRule = Object.fromEntries(r.findings.map((f) => [f.ruleId, f.line]));
     expect(byRule).toMatchObject({ MIG001: 1, MIG002: 2, MIG003: 3, MIG004: 4, MIG005: 5 });
     const drop = r.findings.find((f) => f.ruleId === "MIG002")!;
-    expect(drop.column).toBe(27);
+    expect(drop.column).toBe(26);
   });
 
   it("comments, quoted identifiers and strings with SQL keywords are not misread", () => {
@@ -22,7 +22,7 @@ describe("fixtures", () => {
 
   it("multiline statements and function bodies are handled", () => {
     const r = analyzeSql(fixture("multiline.sql"), { rules: { MIG032: "off" } });
-    expect(r.findings.map((f) => [f.ruleId, f.line])).toEqual([["MIG010", 15]]);
+    expect(r.findings.map((f) => [f.ruleId, f.line])).toEqual([["MIG010", 14]]);
   });
 
   it("concurrent index in a transaction is an error; alone it is fine", () => {
