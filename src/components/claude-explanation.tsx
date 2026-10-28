@@ -11,6 +11,7 @@ import {
 import type { Finding } from "@/lib/core";
 import { findingStatement } from "@/lib/ai-context";
 import { toast } from "sonner";
+import ReactMarkdown from "react-markdown";
 
 export function ClaudeExplanation({ finding, source }: { finding: Finding; source: string }) {
   const [open, setOpen] = useState(false);
@@ -169,8 +170,8 @@ export function ClaudeExplanation({ finding, source }: { finding: Finding; sourc
             </p>
           )}
           {text && (
-            <div className="whitespace-pre-wrap break-words border-t pt-4 text-sm leading-relaxed">
-              {text}
+            <div className="prose-doc min-w-0 break-words border-t pt-4 text-sm leading-relaxed">
+              <ReactMarkdown skipHtml components={{ img: () => null, a: ({ children }) => <span>{children}</span> }}>{text}</ReactMarkdown>
             </div>
           )}
           <p className="text-xs text-muted-foreground">

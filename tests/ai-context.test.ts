@@ -33,6 +33,6 @@ describe("Claude privacy boundary", () => {
       files: [{ path: "migration.sql", content: sql }],
     }).findings.find((f) => f.ruleId === "MIG001");
     if (!finding) throw new Error("Expected DROP TABLE finding");
-    expect(findingStatement(sql, finding)).toBe("DROP TABLE public.orders;");
+    expect(findingStatement(sql, finding)).toBe("DROP TABLE public.orders");
   });
 });

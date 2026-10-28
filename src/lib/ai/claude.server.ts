@@ -49,12 +49,20 @@ export async function handleExplanation(request: Request) {
   const run = createLovableAiGatewayRunIdFetch();
   let upstreamStatus = 200;
   let upstreamMessage = "";
+  let resolveHeaders: () => void = () => {};
+  const headersReady = new Promise<void>((resolve) => { resolveHeaders = resolve; });
   const provider = createAnthropic({
     apiKey: key,
     baseURL: "https://ai.gateway.lovable.dev/v1",
     headers: { "X-Lovable-AIG-SDK": "vercel-ai-sdk" },
     fetch: async (url, init) => {
-      const response = await run.fetch(url, init);
+      let response: Response;
+      try { response = await run.fetch(url, init); } catch (error) {
+        upstreamStatus = abort.signal.aborted ? 499 : 503;
+        upstreamMessage = abort.signal.aborted ? "Request stopped." : "Could not reach Claude. No automatic retry was made.";
+        resolveHeaders();
+        throw error;
+      }
       upstreamStatus = response.status;
       if (!response.ok) {
         try {
@@ -71,6 +79,7 @@ export async function handleExplanation(request: Request) {
             upstreamMessage = `${upstreamMessage} Access pause could not be saved; ask the owner to disable AI until access is restored.`;
         }
       }
+      resolveHeaders();
       return response;
     },
   });
@@ -98,7 +107,7 @@ export async function handleExplanation(request: Request) {
     ],
   });
   // Wait for upstream headers, not completed output, so denials preserve their status.
-  await run.waitForRunId();
+  await headersReady;
   if (upstreamStatus !== 200) {
     abort.abort();
     return Response.json(
