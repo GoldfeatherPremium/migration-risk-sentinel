@@ -1,0 +1,28 @@
+name: Migration Guard action self-test
+on:
+  push:
+    branches: [main]
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  self-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - name: Safe migrations pass
+        uses: ./packages/github-action
+        with:
+          path: tests/fixtures/safe_create_table.sql
+      - name: Destructive migrations fail
+        id: destructive
+        continue-on-error: true
+        uses: ./packages/github-action
+        with:
+          path: tests/fixtures/destructive.sql
+          sarif-file: destructive.sarif
+      - name: Assert failure was reported
+        run: |
+          test "${{ steps.destructive.outcome }}" = "failure"
+          test "${{ steps.destructive.outputs.exit-code }}" = "1"
+          test -s destructive.sarif

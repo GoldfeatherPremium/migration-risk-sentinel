@@ -1,0 +1,11 @@
+name: Feature request
+description: Suggest a new rule or improvement.
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes: { label: Problem, description: What risk or workflow should be addressed? }
+    validations: { required: true }
+  - type: textarea
+    id: proposal
+    attributes: { label: Proposed behaviour, description: For new rules, include positive and negative SQL examples. }

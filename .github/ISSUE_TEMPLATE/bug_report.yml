@@ -1,0 +1,20 @@
+name: Bug report
+description: Report incorrect behaviour of the analyzer, CLI, action or web app.
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes: { label: What happened?, description: Include the command or page you used. }
+    validations: { required: true }
+  - type: textarea
+    id: sql
+    attributes:
+      label: Minimal SQL to reproduce
+      description: Remove any sensitive names or data. Never paste credentials.
+      render: sql
+  - type: input
+    id: version
+    attributes: { label: Analyzer version, placeholder: "supabase-migration-guard --version" }
+  - type: textarea
+    id: expected
+    attributes: { label: Expected behaviour }

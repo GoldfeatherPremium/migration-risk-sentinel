@@ -1,0 +1,11 @@
+{
+  "rules": {
+    "MIG032": "off",
+    "MIG020": "error",
+    "MIG023": { "severity": "warning", "options": { "threshold": 2 } }
+  },
+  "exclude": ["supabase/seed.sql", "**/*_down.sql"],
+  "failOn": "error",
+  "assumeImplicitTransaction": false,
+  "baseline": []
+}
