@@ -8,3 +8,10 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
+
+## Project rules
+- The analysis engine lives in `packages/core/src` and must stay free of React, browser and network dependencies; the web app (`src/`), CLI (`packages/cli`) and GitHub Action all import it directly so results are identical everywhere.
+- Core uses `.js` extensions in relative imports so the same sources compile with `tsc` (NodeNext) for the CLI and with Vite for the web app.
+- SQL classification goes through the lexer/parser token model, never regex over raw SQL, so comments and strings can't trigger rules.
+- Every rule needs a positive and a negative test in `tests/rules.test.ts`; sample SQL shown in the web app is loaded from `tests/fixtures` so demos stay real.
+- Root tsconfig relaxes `noUncheckedIndexedAccess`/`exactOptionalPropertyTypes`/`noPropertyAccessFromIndexSignature` because core is token-index heavy and shared with the CLI build config.
