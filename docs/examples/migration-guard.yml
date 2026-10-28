@@ -1,0 +1,29 @@
+# Example workflow for a Supabase project. Copy to .github/workflows/migration-guard.yml.
+# Static analysis only: no database connection and no secrets are required.
+name: Migration Guard
+on:
+  pull_request:
+    paths: ["supabase/migrations/**"]
+  push:
+    branches: [main]
+    paths: ["supabase/migrations/**"]
+permissions:
+  contents: read
+  security-events: write # only needed for the optional SARIF upload
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      # Pin to verified commit SHAs (these correspond to actions/checkout v4.2.2; verify before use).
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      # Replace OWNER and the ref with your fork/release once published; pin to a commit SHA.
+      - uses: OWNER/supabase-migration-guard/packages/github-action@main
+        with:
+          path: supabase/migrations
+          fail-on: error
+          sarif-file: migration-guard.sarif
+      # Optional: upload SARIF to GitHub code scanning (pin github/codeql-action to a verified SHA).
+      - uses: github/codeql-action/upload-sarif@v3
+        if: always() && hashFiles('migration-guard.sarif') != ''
+        with:
+          sarif_file: migration-guard.sarif

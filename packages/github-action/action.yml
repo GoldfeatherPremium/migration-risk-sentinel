@@ -1,0 +1,53 @@
+name: "Supabase Migration Guard"
+description: "Statically analyze PostgreSQL / Supabase SQL migrations for risky changes. Never connects to a database."
+author: "Supabase Migration Guard contributors"
+branding:
+  icon: "shield"
+  color: "green"
+inputs:
+  path:
+    description: "Migration directory or files to scan (space-separated)."
+    required: false
+    default: "supabase/migrations"
+  fail-on:
+    description: "Fail the step when findings reach this severity: error, warning, info or never."
+    required: false
+    default: "error"
+  config:
+    description: "Optional path to a migration-guard config JSON file."
+    required: false
+    default: ""
+  sarif-file:
+    description: "Optional path to write a SARIF report (for github/codeql-action/upload-sarif)."
+    required: false
+    default: ""
+  node-version:
+    description: "Node.js version used to run the analyzer."
+    required: false
+    default: "20"
+outputs:
+  exit-code:
+    description: "CLI exit code (0 ok, 1 findings at threshold, 2 config error, 3 file error)."
+    value: ${{ steps.scan.outputs.exit-code }}
+runs:
+  using: "composite"
+  steps:
+    - name: Set up Node.js
+      # actions/setup-node v4.4.0 — verify this SHA against the upstream release before relying on it.
+      uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+      with:
+        node-version: ${{ inputs.node-version }}
+    - name: Build analyzer
+      shell: bash
+      run: bash "${{ github.action_path }}/build.sh"
+      env:
+        MG_SOURCE: ${{ github.action_path }}/..
+    - name: Scan migrations
+      id: scan
+      shell: bash
+      run: bash "${{ github.action_path }}/scan.sh"
+      env:
+        MG_PATHS: ${{ inputs.path }}
+        MG_FAIL_ON: ${{ inputs.fail-on }}
+        MG_CONFIG: ${{ inputs.config }}
+        MG_SARIF: ${{ inputs.sarif-file }}
